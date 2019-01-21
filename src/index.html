@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>ScreenMi Client</title>
+    <link rel="stylesheet" type="text/css" href="style.css">
+</head>
+
+<body style="-webkit-app-region: drag">
+    <!-- <body> -->
+    <div class="bgimg-1">
+        <div class="caption">
+            <div id="welcomeText">
+                <span class="border bigger">SCREENMI</span><br>
+                <span class="border smaller">by MIVENTS</span><br>
+                <!-- <span class="border"><a href="/login"> DASHBOARD --</a></span> -->
+                <form id="secretForm" action="">
+                    <input class="secret" type="text" name="secret" id="secret">
+                </form>
+            </div>
+            <div id="loader" class="lds-ripple">
+                <div></div>
+                <div></div>
+            </div>
+        </div>
+    </div>
+    <script>
+        let welcomeText = document.getElementById("welcomeText");
+        let loader = document.getElementById("loader");
+        welcomeText.style.visibility = 'hidden';
+
+        const {
+            ipcRenderer
+        } = require('electron')
+
+
+        function showLoading(){
+            document.getElementById("secret").style.visibility = 'hidden';
+            loader.style.visibility = 'visible';
+        }
+
+        ipcRenderer.on('screen-active-async-reply', (event, arg) => {
+            if (arg) {
+                loader.style.visibility = 'hidden';
+                welcomeText.style.visibility = 'visible';
+                document.getElementById("secret").focus();
+            }
+        })
+
+        ipcRenderer.on('input-secret-async-reply', (event, arg) => {
+            loader.style.visibility = 'hidden';
+            console.log(arg)
+        })
+
+        ipcRenderer.send('screen-active-async', '')
+
+        document.getElementById("secretForm").addEventListener("submit", (event) => {
+            event.preventDefault();
+            showLoading();
+            ipcRenderer.send('input-secret-async',  document.getElementById("secret").value)
+        });
+    </script>
+</body>
+
+</html>
