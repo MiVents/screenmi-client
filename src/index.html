@@ -13,12 +13,12 @@
     <!-- <body> -->
     <div class="bgimg-1">
         <div class="caption">
-            <div id="welcomeText">
+            <div id="login">
                 <span class="border bigger">SCREENMI</span><br>
                 <span class="border smaller">by MIVENTS</span><br>
-                <!-- <span class="border"><a href="/login"> DASHBOARD --</a></span> -->
                 <form id="secretForm" action="">
                     <input class="secret" type="text" name="secret" id="secret">
+                    <p style="color:red;" id="loginErr"></p>
                 </form>
             </div>
             <div id="loader" class="lds-ripple">
@@ -28,40 +28,80 @@
         </div>
     </div>
     <script>
-        let welcomeText = document.getElementById("welcomeText");
-        let loader = document.getElementById("loader");
-        welcomeText.style.visibility = 'hidden';
-
         const {
             ipcRenderer
         } = require('electron')
 
-
-        function showLoading(){
-            document.getElementById("secret").style.visibility = 'hidden';
-            loader.style.visibility = 'visible';
+        let app = {
+            init: () => {
+                app.login.init()
+            },
+            el: {
+                $loginContainer: document.getElementById("login"),
+                $loginForm: document.getElementById('secretForm'),
+                $loginErr: document.getElementById('loginErr'),
+                $loader: document.getElementById('loader'),
+            },
+            login: {
+                init: () => {
+                    app.ui.login('load')
+                    app.login.listen()
+                    app.login.ipc()
+                },
+                listen: () => {
+                    app.el.$loginForm.addEventListener("submit", (event) => {
+                        event.preventDefault();
+                        app.ui.login('load')
+                        ipcRenderer.send('login', document.getElementById("secret").value)
+                    })
+                },
+                ipc: () => {
+                    //init
+                    ipcRenderer.send('init', '')
+                    //init reply
+                    ipcRenderer.on('init-reply', (event, arg) => {arg ? app.ui.login('login') : app.ui.login('login', 'Foute shizzle')})
+                    //reply login
+                    ipcRenderer.on('login-reply', (event, arg) => {
+                        if(arg.err){
+                            app.ui.login('login', arg.msg)
+                            return;
+                        }
+                        if(!arg.valid){
+                            app.ui.login('login', arg.msg)
+                        } else {
+                            app.ui.login('load')
+                        }
+                    })
+                }
+            },
+            ui: {
+                toggle: (el, state) => {el.style.visibility = state ? 'visible' : 'hidden'},
+                login: (state, err) => {
+                    switch (state) {
+                        case 'login':
+                            app.ui.toggle(app.el.$loginContainer, true)
+                            app.ui.toggle(app.el.$loader, false)
+                            break;
+                        case 'load':
+                            app.ui.toggle(app.el.$loginContainer, false)
+                            app.ui.toggle(app.el.$loader, true)
+                            break;
+                        case 'hidden':
+                            app.ui.toggle(app.el.$loginContainer, false)
+                            app.ui.toggle(app.el.$loader, false)
+                            break;
+                    }
+                    if (err) {
+                        app.ui.toggle(app.el.$loginErr, true)
+                        app.el.$loginErr.innerHTML = err
+                    } else {
+                        app.ui.toggle(app.el.$loginErr, false)
+                    }
+                }
+            }
         }
 
-        ipcRenderer.on('screen-active-async-reply', (event, arg) => {
-            if (arg) {
-                loader.style.visibility = 'hidden';
-                welcomeText.style.visibility = 'visible';
-                document.getElementById("secret").focus();
-            }
-        })
-
-        ipcRenderer.on('input-secret-async-reply', (event, arg) => {
-            loader.style.visibility = 'hidden';
-            console.log(arg)
-        })
-
-        ipcRenderer.send('screen-active-async', '')
-
-        document.getElementById("secretForm").addEventListener("submit", (event) => {
-            event.preventDefault();
-            showLoading();
-            ipcRenderer.send('input-secret-async',  document.getElementById("secret").value)
-        });
+        app.init()
     </script>
 </body>
 

@@ -5,6 +5,47 @@ const {
     net
 } = require('electron')
 
+const fetch = require('electron-fetch').default
+
+const _global = {
+    url: {
+        api: '',
+        login: 'http://localhost:3000/api/screen/signin'
+    }
+}
+
+const functions = {
+    fetch: config => {
+        // let config = {
+        //     url : '.../'
+        //     data : {}
+        // }
+        return new Promise(
+            async (resolve, reject) => {
+                console.log(config.data ? config.data : {})
+                try {
+                    fetch(config.url, {
+                            method: 'POST',
+                            body: JSON.stringify(config.data ? config.data : {}),
+                            headers: {
+                                "Content-type": "application/json; charset=UTF-8"
+                            }
+                        })
+                        .then(res => res.json())
+                        .then(json => resolve(json))
+                        .catch(err => {
+                            console.error(err)
+                            reject(err)
+                        })
+                } catch (err) {
+                    console.error(err)
+                    reject(err)
+                }
+            }
+        )
+    }
+}
+
 let mainWindow;
 
 function createWindow() {
@@ -20,12 +61,12 @@ function createWindow() {
     // Open the DevTools.
     mainWindow.webContents.openDevTools()
 
-    ipcMain.on('screen-active-async', (event, arg) => {
+    ipcMain.on('init', (event, arg) => {
 
         // If there isn't a stored secret key ask the user
         setTimeout(() => {
-            event.sender.send('screen-active-async-reply', true)
-        }, 5000);
+            event.sender.send('init-reply', true)
+        }, 500);
 
         // If there is a stored secret key get that one
 
@@ -33,36 +74,20 @@ function createWindow() {
 
     })
 
-    ipcMain.on('input-secret-async', (event, arg) => {
-        let result;
-        // Request to ScreenMi API for playlist
-        var postData = JSON.stringify({
-            'secret' : arg
-        });
-        const request = net.request(`http://localhost:3000/api/screen/signin`,{
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Content-Length': Buffer.byteLength(postData)
-            }
-        })
-        request.on('response', (response) => {
-            result = response;
-            console.log(`STATUS: ${response.statusCode}`)
-            response.on('data', (chunk) => {
-                console.log(`BODY: ${chunk}`)
+    // Request to ScreenMi API for playlist
+    ipcMain.on('login', async (event, arg) => {
+        try {
+            let result = await functions.fetch({
+                url: _global.url.login,
+                data: {
+                    secret: arg
+                }
             })
-            response.on('end', () => {
-                event.sender.send('input-secret-async-reply', result)
-            })
-        })
-        request.end()
-
-
-        // If request is 200 OK store the secret key somewhere
-
+            event.sender.send('login-reply', result)
+        } catch (err) {
+            console.error(err)
+        }
     })
-
     // Emitted when the window is closed.
     mainWindow.on('closed', () => {
         // Dereference the window object, usually you would store windows
