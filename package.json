@@ -1,0 +1,12 @@
+{
+  "name": "screenmi-client",
+  "version": "0.0.1",
+  "description": "",
+  "main": "./src/main.js",
+  "scripts": {
+    "start": "electron .",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "MiVents",
+  "license": "ISC"
+}
