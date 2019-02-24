@@ -18,7 +18,7 @@
                 <span class="border smaller">by MIVENTS</span><br>
                 <form id="secretForm" action="">
                     <input class="secret" type="text" name="secret" id="secret">
-                    <p style="color:red;" id="loginErr"></p>
+                    <p id="loginErr"></p>
                 </form>
             </div>
             <div id="loader" class="lds-ripple">
@@ -59,24 +59,22 @@
                     //init
                     ipcRenderer.send('init', '')
                     //init reply
-                    ipcRenderer.on('init-reply', (event, arg) => {arg ? app.ui.login('login') : app.ui.login('login', 'Foute shizzle')})
+                    ipcRenderer.on('init-reply', (event, arg) => {arg ? app.ui.login('login') : ipcRenderer.send('render-playlist','') })
                     //reply login
                     ipcRenderer.on('login-reply', (event, arg) => {
-                        if(arg.err){
-                            app.ui.login('login', arg.msg)
+                        if(arg.error){
+                            app.ui.login('login', arg.message);
                             return;
                         }
-                        if(!arg.valid){
-                            app.ui.login('login', arg.msg)
-                        } else {
-                            app.ui.login('load')
-                        }
+                        
+                        app.ui.login('load')
+                        ipcRenderer.send('render-playlist','')
                     })
                 }
             },
             ui: {
                 toggle: (el, state) => {el.style.visibility = state ? 'visible' : 'hidden'},
-                login: (state, err) => {
+                login: (state, error) => {
                     switch (state) {
                         case 'login':
                             app.ui.toggle(app.el.$loginContainer, true)
@@ -91,9 +89,9 @@
                             app.ui.toggle(app.el.$loader, false)
                             break;
                     }
-                    if (err) {
+                    if (error) {
                         app.ui.toggle(app.el.$loginErr, true)
-                        app.el.$loginErr.innerHTML = err
+                        app.el.$loginErr.innerHTML = error
                     } else {
                         app.ui.toggle(app.el.$loginErr, false)
                     }

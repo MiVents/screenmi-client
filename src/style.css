@@ -81,6 +81,14 @@ input.secret:focus {
     outline-color: #fff;
 }
 
+#loginErr {
+    background-color: rgb(255, 0, 0);
+    color: rgb(0, 0, 0);
+    padding: 18px;
+    font-size: 25px;
+    letter-spacing: 10px;
+}
+
 /* Loader */
 .lds-ripple {
     display: inline-block;
