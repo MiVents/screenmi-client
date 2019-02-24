@@ -6,11 +6,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>ScreenMi Client</title>
-    <link rel="stylesheet" type="text/css" href="style.css">
-    <link rel="stylesheet" type="text/css" href="playlist.css">
+    <link rel="stylesheet" type="text/css" href="./assets/css/style.css">
+    <link rel="stylesheet" type="text/css" href="./assets/css/playlist.css">
 </head>
 
 <body>
+    <div id="slidecontainer"></div>
     <div id="root" class="">
         <div class="caption">
             <div id="loader" class="lds-ripple">
@@ -19,50 +20,21 @@
             </div>
         </div>
     </div>
+    <!-- LIB -->
     <script>
+        //fix jquery module
+        if (typeof module === 'object') {
+            window.module = module;
+            module = undefined;
+        }
+        //electron API
         const {
             ipcRenderer
         } = require('electron')
-
-        let app = {
-            init: () => {
-                app.ipc();
-            },
-            start(){
-                app.ui.toggle(app.el.$loader);
-                app.ui.next(0);
-            },
-            media: [],
-            el: {
-                $root: document.getElementById("root"),
-                $loader: document.getElementById('loader'),
-            },
-            listen: () => {
-
-            },
-            ipc: () => {
-                //init
-                ipcRenderer.send('load-playlist', '')
-                //reply render playlist
-                ipcRenderer.on('load-playlist-reply', (event, arg) => {
-                    app.media = arg;
-                    app.start();
-                })
-            },
-            ui: {
-                toggle: (el, state) => {el.style.visibility = state ? 'visible' : 'hidden'},
-                next: (slide) => {
-                    app.el.$root.style.backgroundImage = `url('${app.media[slide].url}')`;
-                    setTimeout(() => {
-                        if(slide >= (app.media.length - 1)) slide = -1;
-                        app.ui.next(++slide);
-                    }, app.media[slide].seconds * 1000);
-                }
-            }
-        }
-
-        app.init()
     </script>
+    <script src="./assets/js/jquery.min.js"></script>
+    <!-- GLOBAL -->
+    <script src="./assets/js/playlist.js"></script>
 </body>
 
 </html>
