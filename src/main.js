@@ -166,7 +166,7 @@ function createWindow() {
         } catch (error) {
             console.error(error);
         } finally {
-            event.sender.send('load-playlist-reply', result.data.timeline.slideshow.media);
+            event.sender.send('load-playlist-reply', result.data);
         }
     })
 
@@ -193,6 +193,8 @@ function createWindow() {
         mainWindow = null
     })
 }
+
+app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required');
 
 app.on('ready', createWindow)
 

@@ -11,6 +11,7 @@
 </head>
 
 <body>
+    <div id="logocontainer"></div>
     <div id="slidecontainer"></div>
     <div id="root" class="">
         <div class="caption">
@@ -21,6 +22,7 @@
         </div>
     </div>
     <!-- LIB -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.1/socket.io.js"></script>
     <script>
         //fix jquery module
         if (typeof module === 'object') {
@@ -29,12 +31,18 @@
         }
         //electron API
         const {
-            ipcRenderer
-        } = require('electron')
+            ipcRenderer,
+            remote
+        } = require('electron');
     </script>
     <script src="./assets/js/jquery.min.js"></script>
     <!-- GLOBAL -->
     <script src="./assets/js/playlist.js"></script>
+    <script>
+        $(function () {
+            
+        });
+    </script>
 </body>
 
 </html>

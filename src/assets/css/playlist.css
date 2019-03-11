@@ -19,6 +19,25 @@ body {
     background-color: #000;
 }
 
+.logo {
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 20%;
+    width: 20%;
+    z-index: 99;
+    background-position: top;
+    background-size: contain;
+    opacity: 1;
+    background-repeat: no-repeat;
+}
+
+video {
+    width: 100%;
+    height: 100%;
+}
+
 .slide {
     display: block;
     position: fixed;
