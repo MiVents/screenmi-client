@@ -29,7 +29,8 @@ let app = {
     },
 
     socketHandler(){
-        app.socket = io('http://localhost:3000');
+        app.socket = io('http://development.screenmi.nl');
+        // app.socket = io('http://localhost:3000');
         app.socket.on('refresh', (data) => {
             console.log(`Refreshed`)
             remote.getCurrentWindow().reload();
@@ -46,6 +47,10 @@ let app = {
         ipcRenderer.send('load-playlist', '')
         //reply render playlist
         ipcRenderer.on('load-playlist-reply', (event, arg) => {
+            if(!arg){
+                ipcRenderer.send('retry-login');
+                return;
+            }
             app.media = arg.timeline.slideshow.media;
             app.logo = arg.timeline.logo
             app.start();

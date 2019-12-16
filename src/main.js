@@ -2,7 +2,7 @@ const {
     app,
     BrowserWindow,
     ipcMain,
-    net
+    net,
 } = require('electron')
 const Store = require('./Helpers/Store.js');
 
@@ -11,8 +11,10 @@ const fetch = require('electron-fetch').default
 const _global = {
     url: {
         api: '',
-        login: 'http://localhost:3000/api/screen/signin',
-        timeline: 'http://localhost:3000/api/timeline'
+        timeline: 'http://development.screenmi.nl/api/timeline',
+        login: 'http://development.screenmi.nl/api/screen/signin',
+        // login: 'http://localhost:3000/api/screen/signin',
+        // timeline: 'http://localhost:3000/api/timeline'
     }
 }
 
@@ -74,6 +76,7 @@ const functions = {
                         .then(json => resolve(json))
                         .catch(err => {
                             console.error(err)
+                            // TODO: if code is not valid
                             reject(err)
                         })
                 } catch (err) {
@@ -91,18 +94,31 @@ function createWindow() {
     // Create the browser window.
     let {
         width,
-        height
+        height,
+        x,
+        y
     } = store.get('windowBounds');
+
+    // let bounds = screen.getPrimaryDisplay().bounds;
+    // let x = bounds.x + ((bounds.width - width) / 2);
+    // let y = bounds.y + ((bounds.height - height) / 2);
+
     mainWindow = new BrowserWindow({
         width,
         height,
+        x,
+        y,
+        webPreferences: {
+            nodeIntegration: true
+        },
+        frame: false
     })
 
     // and load the index.html of the app.
     mainWindow.loadFile(`./src/index.html`)
 
     // Open the DevTools.
-    mainWindow.webContents.openDevTools()
+    //mainWindow.webContents.openDevTools()
 
     ipcMain.on('init', (event, arg) => {
         // If there isn't a stored secret key ask the user
@@ -116,6 +132,12 @@ function createWindow() {
         }
 
         event.sender.send('init-reply', login)
+    })
+
+    // Token is not valid retry login
+    ipcMain.on('retry-login', async (event, arg) => {
+        store.set('token', null);
+        mainWindow.loadFile(`./src/index.html`);
     })
 
     // Request to ScreenMi API for playlist
@@ -135,6 +157,7 @@ function createWindow() {
             }
 
             if (result.code !== 200) {
+                console.error(result);
                 result = {
                     error: true,
                     message: `Can't register this screen... Do you have the right secret?`
@@ -182,6 +205,25 @@ function createWindow() {
         store.set('windowBounds', {
             width,
             height
+        });
+    });
+
+    // Emitted when the windows is moved
+    mainWindow.on('move', () => {
+        // The event doesn't pass us the window size, so we call the `getBounds` method which returns an object with
+        // the height, width, and x and y coordinates.
+        let {
+            width,
+            height,
+            x,
+            y
+        } = mainWindow.getBounds();
+        // Now that we have them, save them using the `set` method.
+        store.set('windowBounds', {
+            width,
+            height,
+            x,
+            y
         });
     });
 
