@@ -1,1 +1,1 @@
-electron --no-sandbox . 
+cd ~/screenmi-client && git pull && electron --no-sandbox . 
